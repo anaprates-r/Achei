@@ -4,6 +4,7 @@ from flask_sqlalchemy import SQLAlchemy
 from flask_cors import CORS
 import os
 
+# carregar variáveis do .env
 load_dotenv()
 
 #__________INITIALISATIONS____________________
