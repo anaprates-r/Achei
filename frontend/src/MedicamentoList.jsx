@@ -19,7 +19,7 @@ const MedicamentoList = () => {
   useEffect(() => {
     const buscarSugestoes = async () => {
       try {
-        const response = await fetch("http://localhost:5000/estabelecimentos");
+        const response = await fetch("https://achei-api.onrender.com/estabelecimentos");
         const data = await response.json();
         setListaEstabelecimentos(data);
       } catch (error) {
@@ -40,7 +40,7 @@ const MedicamentoList = () => {
     });
 
     try {
-      const response = await fetch(`http://localhost:5000/medicamentos?${params.toString()}`);
+      const response = await fetch(`https://achei-api.onrender.com/medicamentos?${params.toString()}`);
       const data = await response.json();
       setMedicamentos(data.items || []);
       setTotalPages(data.pages || 1);
