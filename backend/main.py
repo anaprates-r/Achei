@@ -74,7 +74,7 @@ def upload():
     try:
         # 3. O Pipeline aciona o Banco de Dados
         # Passe o caminho completo do arquivo para o seu processador
-        etl(fileName=file_path) 
+        etl(fileName=temp_path) 
 
         # 4. Retorno de sucesso para o React
         # O React receberá esse 201 e saberá que os dados já estão no banco
