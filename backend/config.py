@@ -6,7 +6,14 @@ import os
 
 #__________INITIALISATIONS____________________
 app = Flask(__name__)
-CORS(app, resources={r"/*": {"origins": "*"}})
+
+app.config['CORS_HEADERS'] = 'Content-Type'
+
+CORS(
+    app,
+    resources={r"/*": {"origins": "*"}},
+    supports_credentials=True
+)
 
 app.config["SQLALCHEMY_DATABASE_URI"] = os.getenv("DATABASE_URL")
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
