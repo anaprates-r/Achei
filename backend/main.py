@@ -49,7 +49,7 @@ def listar_estabelecimentos_unicas():
     # Retorna uma lista simples: ["UBS Centro", "Hospital Norte", ...]
     return jsonify([u[0] for u in estabelecimentos if u[0]])
 
-@app.route("/upload", methods=["POST"])
+@app.route('/upload', methods=["POST"])
 def upload():
     # 1. Validação do arquivo
     if 'file' not in request.files:
