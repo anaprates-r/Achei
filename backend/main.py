@@ -49,9 +49,17 @@ def listar_estabelecimentos_unicas():
     # Retorna uma lista simples: ["UBS Centro", "Hospital Norte", ...]
     return jsonify([u[0] for u in estabelecimentos if u[0]])
 
-@app.route('/upload', methods=["POST"])
+import threading
+
+def run_etl(file_path):
+    try:
+        etl(fileName=file_path)
+        print("ETL finalizado com sucesso")
+    except Exception as e:
+        print(f"Erro no ETL: {e}")
+
+@app.route("/upload", methods=["POST"])
 def upload():
-    # 1. Validação do arquivo
     if 'file' not in request.files:
         return jsonify({"message": "Nenhum arquivo enviado"}), 400
 
@@ -59,32 +67,19 @@ def upload():
     if file.filename == '':
         return jsonify({"message": "Arquivo sem nome"}), 400
 
-    # 2. Caminhos (backend/uploads)
-    #upload_path = os.path.join("uploads")
-    #if not os.path.exists(upload_path):
-     #   os.makedirs(upload_path)
+    upload_path = "uploads"
+    os.makedirs(upload_path, exist_ok=True)
 
+    temp_path = os.path.join(upload_path, file.filename)
+    file.save(temp_path)
 
-    try:
-        # 3. O Pipeline aciona o Banco de Dados
-        with tempfile.NamedTemporaryFile(delete=False) as temp:
-            file.save(temp.name)
-            temp_path = temp.name
-        # Passe o caminho completo do arquivo para o seu processador
-        etl(fileName=temp_path) 
+    #RODA EM BACKGROUND
+    thread = threading.Thread(target=run_etl, args=(temp_path,))
+    thread.start()
 
-        # 4. Retorno de sucesso para o React
-        # O React receberá esse 201 e saberá que os dados já estão no banco
-        return jsonify({
-            "message": "Arquivo processado e dados salvos no banco com sucesso!"
-        }), 201
-
-    except Exception as e:
-        # Se o banco de dados falhar, o erro cai aqui
-        print(f"Erro no pipeline: {e}")
-        return jsonify({"message": f"Erro ao salvar no banco: {str(e)}"}), 500
-
-
+    return jsonify({
+        "message": "Arquivo enviado! Processamento em andamento..."
+    }), 202
 
 #To run the aplication:
 if __name__ == "__main__":
