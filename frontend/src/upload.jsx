@@ -37,7 +37,7 @@ const UploadFile = () => {
       }
     } catch (error) {
       console.error("Erro ao enviar:", error);
-      alert("Erro de conexão com o servidor.");
+      alert("Erro: " + error.message);
     }
   };
 
