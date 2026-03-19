@@ -49,7 +49,7 @@ def listar_estabelecimentos_unicas():
     # Retorna uma lista simples: ["UBS Centro", "Hospital Norte", ...]
     return jsonify([u[0] for u in estabelecimentos if u[0]])
 
-@app.route("/upload", methods=["POST"])
+@app.route('/upload', methods=["POST"])
 def upload():
     # 1. Validação do arquivo
     if 'file' not in request.files:
@@ -60,19 +60,16 @@ def upload():
         return jsonify({"message": "Arquivo sem nome"}), 400
 
     # 2. Caminhos (backend/uploads)
-    upload_path = os.path.join("uploads")
-    if not os.path.exists(upload_path):
-        os.makedirs(upload_path)
-
-    
-
-    with tempfile.NamedTemporaryFile(delete=False) as temp:
-        file.save(temp.name)
-        temp_path = temp.name
+    #upload_path = os.path.join("uploads")
+    #if not os.path.exists(upload_path):
+     #   os.makedirs(upload_path)
 
 
     try:
         # 3. O Pipeline aciona o Banco de Dados
+        with tempfile.NamedTemporaryFile(delete=False) as temp:
+            file.save(temp.name)
+            temp_path = temp.name
         # Passe o caminho completo do arquivo para o seu processador
         etl(fileName=temp_path) 
 
