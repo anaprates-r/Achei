@@ -3,6 +3,7 @@ from flask import request, jsonify
 from config import app,db
 from models import Medicamento
 from pipeline import etl
+import tempfile
 
 import os
 
@@ -63,8 +64,12 @@ def upload():
     if not os.path.exists(upload_path):
         os.makedirs(upload_path)
 
-    file_path = os.path.join(upload_path, file.filename)
-    file.save(file_path)
+    
+
+    with tempfile.NamedTemporaryFile(delete=False) as temp:
+        file.save(temp.name)
+        temp_path = temp.name
+
 
     try:
         # 3. O Pipeline aciona o Banco de Dados
