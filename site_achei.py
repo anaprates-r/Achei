@@ -5,20 +5,22 @@ import signal
 from pathlib import Path
 
 def site_achei():
-    # 1. Configuração de Caminhos (Sem usar chdir toda hora)
     raiz = Path(__file__).parent.absolute()
     backend_path = raiz / "backend"
     frontend_path = raiz / "frontend"
     venv_path = raiz / ".venv"
     
+    # Define binários conforme o SO
     if os.name == "nt":
         python_venv = venv_path / "Scripts" / "python.exe"
         pip_venv = venv_path / "Scripts" / "pip.exe"
+        creation_flags = subprocess.CREATE_NEW_PROCESS_GROUP # Para Windows
     else:
         python_venv = venv_path / "bin" / "python"
         pip_venv = venv_path / "bin" / "pip"
+        creation_flags = 0
 
-    # 2. Preparação do Ambiente
+    # 1. Preparação do Ambiente
     if not venv_path.exists():
         print("Criando venv...")
         subprocess.run([sys.executable, "-m", "venv", str(venv_path)], check=True)
@@ -26,32 +28,39 @@ def site_achei():
     print("Instalando dependências do backend...")
     subprocess.run([str(pip_venv), "install", "-r", str(raiz / "requirements.txt")], check=True)
 
-    # Lista para guardar os processos e matá-los depois
     processos = []
 
     try:
-        # 3. Rodar Backend (Corrigido para usar o python da venv)
+        # 2. Rodar Backend
         print("Iniciando Backend...")
-        # Note: removi a aspa simples extra de "main'.py"
         proc_back = subprocess.Popen(
             [str(python_venv), "main.py"], 
-            cwd=backend_path
+            cwd=backend_path,
+            # No Unix, cria grupo de processo para matar filhos depois
+            start_new_session=(os.name != "nt") 
         )
         processos.append(proc_back)
 
-        # 4. Rodar Frontend
+        # 3. Rodar Frontend
         if frontend_path.exists():
-            print("Instalando dependências do frontend...")
-            subprocess.run(["npm", "install"], cwd=frontend_path, check=True)
+            if not (frontend_path / "node_modules").exists():
+                print("Instalando dependências do frontend...")
+                subprocess.run(["npm", "install"], cwd=frontend_path, check=True, shell=(os.name == "nt"))
             
             print("Iniciando Frontend...")
-            proc_front = subprocess.Popen(["npm", "run", "dev"], cwd=frontend_path)
+            # shell=True é recomendável para comandos npm no Windows
+            proc_front = subprocess.Popen(
+                ["npm", "run", "dev"], 
+                cwd=frontend_path, 
+                shell=(os.name == "nt"),
+                start_new_session=(os.name != "nt")
+            )
             processos.append(proc_front)
 
         print("\n--- TUDO RODANDO ---")
-        print("Pressione Ctrl+C para encerrar os servidores.")
+        print("Pressione Ctrl+C para encerrar.")
         
-        # Mantém o script pai vivo enquanto os processos rodam
+        # Aguarda os processos
         for p in processos:
             p.wait()
 
@@ -59,16 +68,15 @@ def site_achei():
         print("\nEncerrando servidores...")
     
     finally:
-        # 5. MATAR OS PROCESSOS (A mágica acontece aqui)
         for p in processos:
             try:
                 if os.name == "nt":
-                    # No Windows, terminate() às vezes não fecha os filhos do npm
+                    # taskkill /T fecha toda a árvore de processos
                     subprocess.run(["taskkill", "/F", "/T", "/PID", str(p.pid)], capture_output=True)
                 else:
-                    # No Linux/Mac, mata o grupo de processos
+                    # Mata o grupo de processos (PID negativo no kill faz isso)
                     os.killpg(os.getpgid(p.pid), signal.SIGTERM)
-            except:
+            except Exception:
                 p.terminate()
         print("Ambiente limpo. Até logo!")
 
