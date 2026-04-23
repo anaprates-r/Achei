@@ -10,8 +10,8 @@ def limpeza_dos_dados(arquivo):
     df = df[df[1].str.startswith(('Estabelecimento', 'BR', 'Total:'), na=False)].copy()
 
     # Extrai e propaga o nome do estabelecimento_saude
-    df["estabelecimento"] = df[1].str.extract(r'Estabelecimento de Saúde:\s*(.*)', flags=re.IGNORECASE)
-    df["estabelecimento"] = df["estabelecimento"].ffill().fillna("").astype(str).str.strip()
+    df["estabelecimento_saude"] = df[1].str.extract(r'Estabelecimento de Saúde:\s*(.*)', flags=re.IGNORECASE)
+    df["estabelecimento_saude"] = df["estabelecimento_saude"].ffill().fillna("").astype(str).str.strip()
 
     # Separa o código CATMAT da descrição do medicamento
     df["catmat"] = df[1].str.extract(r'(BR\S*)')
