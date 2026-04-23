@@ -120,8 +120,10 @@ def upload():
         }), 201
 
     except Exception as e:
+        import traceback
+        traceback.print_exc()
         # Se o banco de dados falhar, o erro cai aqui
-        print(f"Erro no pipeline: {e}")
+        # print(f"Erro no pipeline: {e}")
         return jsonify({"message": f"Erro ao salvar no banco: {str(e)}"}), 500
     #To run the aplication:
 if __name__ == "__main__":
