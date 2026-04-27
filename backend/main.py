@@ -90,8 +90,11 @@ if __name__ == "__main__":
     port = int(os.environ.get("PORT", 5000))
     app.run(host="0.0.0.0", port=port)
 '''
-@app.route("/upload", methods=["POST"])
+@app.route("/upload", methods=["POST", "OPTIONS"])
 def upload():
+
+    if request.method == "OPTIONS":
+        return '', 200
     # 1. Validação do arquivo
     if 'file' not in request.files:
         return jsonify({"message": "Nenhum arquivo enviado"}), 400
