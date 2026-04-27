@@ -6,14 +6,20 @@ import os
 
 #__________INITIALISATIONS____________________
 app = Flask(__name__)
-CORS(app, resources={r"/*": {"origins": "*"}})
+CORS(
+    app,
+    origins=["https://achei-medicamentos.vercel.app"],
+    supports_credentials=True,
+    allow_headers="*",
+    methods=["GET", "POST", "OPTIONS"]
+)
 
 app.config["SQLALCHEMY_DATABASE_URI"] = os.getenv("DATABASE_URL")
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 
 
 ALLOWED_EXTENSIONS = {'xls','xlsx'}
-app.config['UPLOAD_FOLDER'] ="/upload"  
+app.config['UPLOAD_FOLDER'] ="uploads"
 
 
 db = SQLAlchemy(app)
