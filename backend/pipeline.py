@@ -1,4 +1,7 @@
 from processamento_2 import limpeza_dos_dados
+from config import app, db
+from models import Medicamento
+
 def etl(fileName):
     df_limpo = limpeza_dos_dados(fileName)
 
