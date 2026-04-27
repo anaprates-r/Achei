@@ -1,3 +1,4 @@
+from processamento_2 import limpeza_dos_dados
 def etl(fileName):
     df_limpo = limpeza_dos_dados(fileName)
 
