@@ -8,10 +8,10 @@ import os
 app = Flask(__name__)
 CORS(
     app,
-    origins=["https://achei-medicamentos.vercel.app"],
-    supports_credentials=True,
-    allow_headers="*",
-    methods=["GET", "POST", "OPTIONS"]
+    resources={r"/*": {
+        "origins": "https://achei-medicamentos.vercel.app"
+    }},
+    supports_credentials=True
 )
 
 app.config["SQLALCHEMY_DATABASE_URI"] = os.getenv("DATABASE_URL")
