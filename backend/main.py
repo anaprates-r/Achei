@@ -3,6 +3,7 @@ from flask import request, jsonify
 from config import app,db
 from models import Medicamento
 from pipeline import etl
+import traceback
 
 import os
 
@@ -52,6 +53,8 @@ def listar_estabelecimentos_unicas():
 
 @app.route('/upload', methods=['POST','OPTIONS'])
 def upload():
+    if request.method == 'OPTIONS':
+        return '', 200
     # 1. Validação do arquivo
     if 'file' not in request.files:
         return jsonify({"message": "Nenhum arquivo enviado"}), 400
@@ -78,10 +81,10 @@ def upload():
         return jsonify({
             "message": "Arquivo processado e dados salvos no banco com sucesso!"
         }), 201
-
+        
     except Exception as e:
         # Se o banco de dados falhar, o erro cai aqui
-        print(f"Erro no pipeline: {e}")
+        traceback.print_exc()
         return jsonify({"message": f"Erro ao salvar no banco: {str(e)}"}), 500
 
 
