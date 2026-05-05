@@ -5,7 +5,10 @@ from config import db, app
 
 def etl(fileName):
     # Chama o processamento do arquivo e retorna um DataFrame limpo
+    print("1. Iniciando ETL")
     df_limpo = limpeza_dos_dados(fileName)
+    print("2. DataFrame carregado")
+    print(df_limpo.head())
     
     with app.app_context():
         for _, row in df_limpo.iterrows():
