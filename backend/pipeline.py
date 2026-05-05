@@ -8,6 +8,11 @@ def etl(fileName):
     print("1. Iniciando ETL")
     df_limpo = limpeza_dos_dados(fileName)
     print("2. DataFrame carregado")
+    df_limpo = df_limpo.head(100)
+
+    print("Total de linhas após limite:", len(df_limpo))
+
+    df_limpo = df_limpo.fillna('')
     print(df_limpo.head())
     
     with app.app_context():
