@@ -8,10 +8,16 @@ def etl(fileName):
     df_limpo = df_limpo.fillna('')
 
     with app.app_context():
+        print("Carregando registros existentes...")
+
         existentes = {
             (m.catmat, m.estabelecimento_saude): m
             for m in Medicamento.query.all()
         }
+
+        novos = []
+
+        print("Processando DataFrame...")
 
         for _, row in df_limpo.iterrows():
             chave = (row['catmat'], row['estabelecimento_saude'])
@@ -21,12 +27,16 @@ def etl(fileName):
                 existente.quantidade = row['quantidade']
                 existente.medicamento = row['medicamento']
             else:
-                novo = Medicamento(
+                novos.append(Medicamento(
                     catmat=row['catmat'],
                     medicamento=row['medicamento'],
                     quantidade=row['quantidade'],
                     estabelecimento_saude=row['estabelecimento_saude']
-                )
-                db.session.add(novo)
+                ))
 
+        print(f"Novos registros: {len(novos)}")
+
+        db.session.bulk_save_objects(novos) 
         db.session.commit()
+
+        print("Finalizado!")
