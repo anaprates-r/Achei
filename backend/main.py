@@ -84,13 +84,10 @@ def upload():
     try:
         # 3. O Pipeline aciona o Banco de Dados
         # Passe o caminho completo do arquivo para o seu processador
-        thread = threading.Thread(target=rodar_etl_background, args=(file_path,))
-        thread.start()
+        rodar_etl_background(file_path)
 
-        # 4. Retorno de sucesso para o React
-        # O React receberá esse 201 e saberá que os dados já estão no banco
         return jsonify({
-            "message": "Arquivo processado e dados salvos no banco com sucesso!"
+            "message": "ETL concluído com sucesso"
         }), 201
         
     except Exception as e:
