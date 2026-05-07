@@ -30,13 +30,17 @@ def etl(fileName):
                 existente.quantidade = row['quantidade']
                 existente.medicamento = row['medicamento']
             else:
-                novos.append(Medicamento(
+                novo = Medicamento(
                     catmat=row['catmat'],
                     medicamento=row['medicamento'],
                     quantidade=row['quantidade'],
                     estabelecimento_saude=row['estabelecimento_saude']
-                ))
-            contador += 1
+                )
+
+                novos.append(novo)
+
+                existentes[chave] = novo
+                contador += 1
             
             # commit em lote
             if contador % BATCH_SIZE == 0:
