@@ -19,6 +19,8 @@ def etl(fileName):
 
         novos = []
         contador = 0
+        atualizados = 0 
+        inseridos = 0
 
         print("Processando DataFrame...")
 
@@ -29,6 +31,7 @@ def etl(fileName):
                 existente = existentes[chave]
                 existente.quantidade = row['quantidade']
                 existente.medicamento = row['medicamento']
+                atualizados += 1
             else:
                 novo = Medicamento(
                     catmat=row['catmat'],
@@ -40,7 +43,8 @@ def etl(fileName):
                 novos.append(novo)
 
                 existentes[chave] = novo
-                contador += 1
+                inseridos += 1
+            contador += 1
             
             # commit em lote
             if contador % BATCH_SIZE == 0:
@@ -58,4 +62,6 @@ def etl(fileName):
 
         db.session.commit()
         print("ETL finalizado")
-
+        print(f"Atualizados: {atualizados}")
+        print(f"Inseridos: {inseridos}")
+        print(f"Total processado: {contador}")
