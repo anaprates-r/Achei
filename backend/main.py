@@ -4,6 +4,7 @@ from config import app,db
 from models import Medicamento
 from pipeline import etl
 import traceback
+import threading
 
 import os
 
@@ -74,7 +75,8 @@ def upload():
     try:
         # 3. O Pipeline aciona o Banco de Dados
         # Passe o caminho completo do arquivo para o seu processador
-        etl(fileName=file_path) 
+        thread = threading.Thread(target=rodar_etl_background, args=(file_path,))
+        thread.start()
 
         # 4. Retorno de sucesso para o React
         # O React receberá esse 201 e saberá que os dados já estão no banco
@@ -87,7 +89,15 @@ def upload():
         traceback.print_exc()
         return jsonify({"message": f"Erro ao salvar no banco: {str(e)}"}), 500
 
-
+def rodar_etl_background(file_path):
+    try:
+        print("🚀 ETL iniciado em background")
+        etl(fileName=file_path)
+        print("ETL finalizado")
+    except Exception as e:
+        import traceback
+        print("ERRO NO ETL:")
+        traceback.print_exc()
 
 #To run the aplication:
 if __name__ == "__main__":
