@@ -34,9 +34,11 @@ def etl(fileName):
                     estabelecimento_saude=row['estabelecimento_saude']
                 ))
 
-        print(f"Novos registros: {len(novos)}")
+        print("Antes do bulk_save_objects")
 
-        db.session.bulk_save_objects(novos) 
+        if novos:
+            db.session.bulk_save_objects(novos)
+
+        print("Antes do commit")
         db.session.commit()
-
-        print("Finalizado!")
+        print("Depois do commit")
