@@ -7,6 +7,7 @@ import traceback
 import threading
 
 import os
+etl_rodando = False
 
 @app.route('/')
 def index_page():
@@ -71,6 +72,14 @@ def upload():
 
     file_path = os.path.join(upload_path, file.filename)
     file.save(file_path)
+    global etl_rodando
+
+    if etl_rodando:
+        return jsonify({
+            "message": "ETL já está em execução"
+        }), 400
+
+    etl_rodando = True
 
     try:
         # 3. O Pipeline aciona o Banco de Dados
@@ -91,13 +100,15 @@ def upload():
 
 def rodar_etl_background(file_path):
     try:
-        print("🚀 ETL iniciado em background")
+        print("ETL iniciado em background")
         etl(fileName=file_path)
         print("ETL finalizado")
     except Exception as e:
         import traceback
         print("ERRO NO ETL:")
         traceback.print_exc()
+    finally:
+        etl_rodando = False
 
 #To run the aplication:
 if __name__ == "__main__":
