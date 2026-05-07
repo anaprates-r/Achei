@@ -16,6 +16,7 @@ def etl(fileName):
         }
 
         novos = []
+        contador = 0
 
         print("Processando DataFrame...")
 
@@ -33,12 +34,22 @@ def etl(fileName):
                     quantidade=row['quantidade'],
                     estabelecimento_saude=row['estabelecimento_saude']
                 ))
+            contador += 1
+            
+            # commit em lote
+            if contador % BATCH_SIZE == 0:
+                if novos:
+                    db.session.bulk_save_objects(novos)
+                    novos = []
 
-        print("Antes do bulk_save_objects")
+                db.session.commit()
+
+                print(f"Lote {contador} processado")
+
 
         if novos:
             db.session.bulk_save_objects(novos)
 
-        print("Antes do commit")
         db.session.commit()
-        print("Depois do commit")
+        print("ETL finalizado")
+
