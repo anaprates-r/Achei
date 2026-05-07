@@ -53,59 +53,85 @@ def listar_estabelecimentos_unicas():
     # Retorna uma lista simples: ["UBS Centro", "Hospital Norte", ...]
     return jsonify([u[0] for u in estabelecimentos if u[0]])
 
-@app.route('/upload', methods=['POST','OPTIONS'])
+@app.route('/upload', methods=['POST', 'OPTIONS'])
 def upload():
-    if request.method == 'OPTIONS':
-        return '', 200
-    # 1. Validação do arquivo
-    if 'file' not in request.files:
-        return jsonify({"message": "Nenhum arquivo enviado"}), 400
 
-    file = request.files['file']
-    if file.filename == '':
-        return jsonify({"message": "Arquivo sem nome"}), 400
-
-    # 2. Caminhos (backend/uploads)
-    upload_path = app.config['UPLOAD_FOLDER']
-    if not os.path.exists(upload_path):
-        os.makedirs(upload_path)
-
-    file_path = os.path.join(upload_path, file.filename)
-    file.save(file_path)
     global etl_rodando
 
+    # CORS preflight
+    if request.method == 'OPTIONS':
+        return '', 200
+
+    # impede múltiplos ETLs simultâneos
     if etl_rodando:
         return jsonify({
             "message": "ETL já está em execução"
         }), 400
 
-    etl_rodando = True
+    # validação arquivo
+    if 'file' not in request.files:
+        return jsonify({
+            "message": "Nenhum arquivo enviado"
+        }), 400
+
+    file = request.files['file']
+
+    if file.filename == '':
+        return jsonify({
+            "message": "Arquivo sem nome"
+        }), 400
 
     try:
-        # 3. O Pipeline aciona o Banco de Dados
-        # Passe o caminho completo do arquivo para o seu processador
-        rodar_etl_background(file_path)
+        # cria pasta uploads
+        upload_path = app.config['UPLOAD_FOLDER']
+
+        if not os.path.exists(upload_path):
+            os.makedirs(upload_path)
+
+        # salva arquivo
+        file_path = os.path.join(
+            upload_path,
+            file.filename
+        )
+
+        file.save(file_path)
+
+        # trava ETL
+        etl_rodando = True
+
+        # inicia thread
+        thread = threading.Thread(
+            target=rodar_etl_background,
+            args=(file_path,),
+            name="etl-thread"
+        )
+
+        thread.daemon = True
+        thread.start()
 
         return jsonify({
-            "message": "ETL concluído com sucesso"
+            "message": "ETL iniciado com sucesso"
         }), 201
-        
     except Exception as e:
-        # Se o banco de dados falhar, o erro cai aqui
+        etl_rodando = False
         traceback.print_exc()
-        return jsonify({"message": f"Erro ao salvar no banco: {str(e)}"}), 500
+        return jsonify({
+            "message": f"Erro ao iniciar ETL: {str(e)}"
+        }), 500
+
 
 def rodar_etl_background(file_path):
+    global etl_rodando
     try:
-        print("ETL iniciado em background")
+        print(" ETL iniciado em background")
         etl(fileName=file_path)
         print("ETL finalizado")
     except Exception as e:
-        import traceback
-        print("ERRO NO ETL:")
+        print("❌ ERRO NO ETL")
         traceback.print_exc()
     finally:
         etl_rodando = False
+        print("Flag ETL liberada")
 
 #To run the aplication:
 if __name__ == "__main__":
