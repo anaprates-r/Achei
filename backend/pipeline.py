@@ -3,6 +3,8 @@ from processamento_2 import limpeza_dos_dados
 from models import Medicamento
 from config import db, app
 
+BATCH_SIZE = 500
+
 def etl(fileName):
     df_limpo = limpeza_dos_dados(fileName)
     df_limpo = df_limpo.fillna('')
